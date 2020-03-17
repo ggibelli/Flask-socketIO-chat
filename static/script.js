@@ -152,13 +152,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When a message is sent, call 'send message' function from server
     document.querySelector('#sendMessage').onsubmit = () => {
-        const message = document.querySelector('#Message').value
-        const lastchannel = localStorage.getItem('lastchannel');
-        const username = localStorage.getItem('nickname');
+        const message = document.querySelector('#Message').value;
+        const user = localStorage.getItem('nickname');
+            
         const date = new Date();
-
-        socket.emit('send message', {'message': message, 'username': username, 'date': date, 'channel': lastchannel});
-        console.log(lastchannel)
+        const messageJSON = {
+            message: message,
+            user: user,
+            date: date
+        }
+        const lastchannel = localStorage.getItem('lastchannel');
+        socket.emit('send message', {'JSON': messageJSON, 'channel': lastchannel});
         // Clear message form
         document.querySelector('#Message').value = "";
         return false;
@@ -166,7 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Callback from server for sending messages
     socket.on('broadcast message', data =>{
-        console.log(data);
+        console.log(data.message.message);
+        console.log(data.username)
+        console.log(data.date)
 
         // Append message to list of messages
         const li = document.createElement('li');

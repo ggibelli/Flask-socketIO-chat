@@ -14,6 +14,8 @@ socketio = SocketIO(app)
 channels = []
 active_users = set()
 active_users_channel = defaultdict(list)
+messages = []
+messages_channel = defaultdict(list)
 
 @app.route("/")
 def index():
@@ -50,12 +52,17 @@ def on_leave(data):
     emit('announcement', {'message': username + ' has left the room.'}, room=room)
     
 @socketio.on("send message")
+
 def message(data):
+    print(data['JSON']['message'])
     room = data['channel']
-    username = data['username']
-    date = data['date']
-    message = data['message']
-    logging.warning(data['message'])
+    username = data['JSON']['user']
+    date = data['JSON']['date']
+    message = data['JSON']['message']
+    messages.append((room, data['JSON']))
+    for channel, message in messages:
+        messages_channel[channel].append(message)
+    print(messages_channel)
     emit('broadcast message', {'message': message, 'username': username, 'date': date}, room=room)
 
 if __name__ == "__main__":
