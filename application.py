@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
-messageID = 0
+messageID_list = []
 users_online = {}
 channels = []
 active_users = {}
@@ -45,23 +45,26 @@ def test_disconnect():
     for k, v in list(users_online.items()):
         if v == user_sid:
             del users_online[k]
+            emit('disconnected', {'user': user_left, 'usersid': user_sid}, broadcast=True)
     if user_sid in disconnection_handler:
         user_left = disconnection_handler[user_sid]
         channel_left = active_users[user_left]
         times = [v for k,v in reload_handler.items() if k == user_left]
         print(times[0])
         print(reload_handler)
-        if now - times[0] > 70:
+        if now - times[0] > 120:
             del active_users[user_left]
             emit('leaveuser', {'user': user_left}, room=channel_left)
-            emit('disconnected', {'user': user_left, 'usersid': user_sid}, broadcast=True)
-        #channel_left = active_users[user_left]
-        #if user_left not in users_online and now - reload_handler[user_sid][1] > 180:
-            #diocaneeeeee
-        #if now - reload_handler[user_sid][1] > 90:
-            #emit('leaveuser', {'user': user_left}, room=channel_left)
-            #emit('disconnected', {'user': user_left, 'usersid': user_sid}, broadcast=True)
-            #emit('announcement', {'message': user_left + ' has left the room.'}, room=channel_left) 
+        else:
+            emit('check disconnect', {'user': user_left, 'channel': channel_left}, broadcast=True)
+
+@socketio.on('disconnected')
+def check_disconnected():
+    user_left = data['user']
+    channel_left  = data['channel']
+    user_reconnected = data['reconnected']
+    if not user_reconnected:
+        emit('leaveuser', {'user': user_left}, room=channel_left)
 
 @socketio.on("create channel")
 def create(data):
@@ -90,7 +93,8 @@ def on_leave(data):
 @socketio.on("send message")
 def message(data):
     messages = []
-    messageID += 1
+    messageID_list.append(1)
+    messageID = sum(messageID_list)
     room = data['channel']
     username = data['JSON']['user']
     date = data['JSON']['date']

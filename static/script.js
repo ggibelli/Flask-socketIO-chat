@@ -55,9 +55,19 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('disconnected', data => {
     console.log(data)
     console.log(users_online)
-    delete users_online[data.user]
-    document.querySelector(`#${CSS.escape(data.usersid)}`).remove()
+    delete users_online[data.user];
+    document.querySelector(`#${CSS.escape(data.usersid)}`).remove();
     //document.querySelector('#'+data.usersid).remove()
+  })
+
+  socket.on('check disconnect', data => {
+    let user_left = data.user;
+    let user_reconnected = false;
+    if (user_left === username) {
+      user_reconnected = true;
+    }
+    socket.emit('reconnected', {'user_reconnected': user_reconnected, 'user': data.user, 'channel': data.channel});
+    
   })
 
 
