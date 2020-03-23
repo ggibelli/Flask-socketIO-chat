@@ -48,28 +48,28 @@ document.addEventListener('DOMContentLoaded', () => {
       a.href = "#";
       document.querySelector('#onlineUsers').append(li);
     }
-    console.log(users_online)
   })
 
   // Update the user online list
   socket.on('disconnected', data => {
-    console.log(data)
-    console.log(users_online)
     delete users_online[data.user];
-    document.querySelector(`#${CSS.escape(data.usersid)}`).remove();
-    //document.querySelector('#'+data.usersid).remove()
+    let li = document.querySelector(`#${CSS.escape(data.usersid)}`)
+    if (li) {
+      li.remove();
+    }
   })
 
   socket.on('check disconnect', data => {
+    console.log(data)
     let user_left = data.user;
     let user_reconnected = false;
     if (user_left === username) {
       user_reconnected = true;
     }
+    console.log(user_reconnected)
     socket.emit('reconnected', {'user_reconnected': user_reconnected, 'user': data.user, 'channel': data.channel});
     
   })
-
 
   // Logic form channel creation
   // By default, submit button is disabled
@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // When an user joins update the user channel list
   socket.on('joinuser', data => {
-    //console.log(data.messages[0].message)
     const item = document.querySelector('#SingleMessage')
     while (item.firstChild) {
       item.removeChild(item.firstChild)
@@ -105,8 +104,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (messagelength > 100){
       messagelength = 99;
     }
+    let entries = Object.entries(data.messages)
+    let message;
+    let sendby;
+    let datesend;
+
+    for (let entrie of entries){
+      for (let array of entrie) {
+        if (array[0].message != undefined){
+        message = array[0].message;
+        datesend = array[0].date
+        sendby = array[0].user
+      }
+      }
+    }
     for (let i = 0; i < messagelength; i++) {
-      appendMessage(data.messages[i].message, data.messages[i].user, data.messages[i].date)
+      appendMessage(message, sendby, datesend)
     }
     let userlength = data.userlist.length;
     let userlist = document.querySelectorAll('#userList li');
@@ -170,14 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
       newchannel = a.innerHTML;
       if (checkChannel(actualchannel, newchannel)){
         leaveChannel(actualchannel);
-        /*socket.on('leaveuser', data => {
-          let li = document.getElementById(data.user);
-          if (li) {
-            li.remove(); 
-          }
-        })*/
         joinChannel(newchannel);
-                  
         return false;
       }    
     })
@@ -197,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
       chanlist.add('active');
       actualchannel = localStorage.getItem('lastchannel');
       newchannel = channel.innerHTML;
-      console.log(newchannel);
       if (checkChannel(newchannel, actualchannel)){
         leaveChannel(actualchannel);
         joinChannel(newchannel);
@@ -225,50 +230,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Callback from server for sending messages
   socket.on('broadcast message', data =>{
-    console.log(data)
     appendMessage(data.message.message, data.username, data.date, data.messageID)
   });
 
+  // Callback for deleting messages
+  socket.on('message deleted', data => {
+    let element = document.querySelector(`#${CSS.escape(data.messageID)}`)
+    if (element){
+      element.style.animationPlayState = 'running';
+      element.addEventListener('animationend', () =>  {
+        element.remove();
+      });
+    }
+  })
+
+  // Diplay message function
   function appendMessage(message, user, date, messageID) {
-      const a = document.createElement('a');
-      a.classList.add('list-group-item', 'list-group-item-action', 'message');
-      document.querySelector('#SingleMessage').append(a);
-      const div = document.createElement('div');
-      div.classList.add('d-flex', 'w-100' ,'justify-content-between');
-      const alist = document.querySelectorAll('#SingleMessage a');
-      const last = alist[alist.length - 1];
-      last.append(div)
-      const h5 = document.createElement('h5');
-      h5.classList.add('mb-1');
-      console.log(message.username)
-      if (user === localStorage.getItem('nickname')) {
-        h5.innerHTML = 'You wrote:'
+    const a = document.createElement('a');
+    a.setAttribute('id', messageID)
+    a.classList.add('list-group-item', 'list-group-item-action', 'message');
+    document.querySelector('#SingleMessage').append(a);
+    const div = document.createElement('div');
+    div.classList.add('d-flex', 'w-100' ,'justify-content-between');
+    const alist = document.querySelectorAll('#SingleMessage a');
+    const last = alist[alist.length - 1];
+    last.append(div)
+    const h5 = document.createElement('h5');
+    h5.classList.add('mb-1');
+    if (user === localStorage.getItem('nickname')) {
+      h5.innerHTML = 'You wrote:';
+      last.firstChild.append(h5);
+      if (messageID !== undefined) {
         const button = document.createElement('button');
         button.classList.add('btn', 'btn-secondary', 'btn-sm');
         button.innerHTML = 'delete';
         button.onclick = () => {
           socket.emit('delete message',{'messageID': messageID});
-          console.log(button.parentElement.parentElement)
-          button.parentNode.parentNode.style.animationPlayState = 'running';
-          button.parentNode.parentNode.addEventListener('animationend', () =>  {
-            button.parentElement.parentElement.remove();
-          });
         }
-        last.firstChild.append(h5);
         last.firstChild.append(button);
       }
-      else {
-        h5.innerHTML = `${user} wrote:`
-        last.firstChild.append(h5);
-      }
-      const p = document.createElement('p');
-      p.classList.add('mb-1');
-      p.innerHTML= `${message}`
-      last.append(p);
-      const small = document.createElement('small');
-      small.classList.add('text-muted');
-      small.innerHTML = `${date}`;
-      last.append(small);
+    }
+    else {
+      h5.innerHTML = `${user} wrote:`
+      last.firstChild.append(h5);
+    }
+    const p = document.createElement('p');
+    p.classList.add('mb-1');
+    p.innerHTML= `${message}`
+    last.append(p);
+    const small = document.createElement('small');
+    small.classList.add('text-muted');
+    small.innerHTML = `${date}`;
+    last.append(small);
   }
 
   function checkChannel(newchannel, oldchannel) {

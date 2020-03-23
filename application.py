@@ -28,43 +28,36 @@ def index():
 @socketio.on('connected')
 def connected(data):
     username = data['username']
-    now = time.time()
     user_sid = request.sid
     users_online[username] = user_sid
-    reload_handler[username] = now
-    disconnection_handler[user_sid] = username
+    #reload_handler[username] = now
+    #disconnection_handler[user_sid] = username
     emit('onlineusers', {'onlineusers': users_online}, broadcast=True)
 
 # Handling disconnection and page reload
 @socketio.on('disconnect')
 def test_disconnect():
     user_sid = request.sid
-    now = time.time()
-    print('##########')
-    print(now)
     for k, v in list(users_online.items()):
         if v == user_sid:
+            user_left = k
+            channel_left = active_users[user_left]
             del users_online[k]
-            emit('disconnected', {'user': user_left, 'usersid': user_sid}, broadcast=True)
-    if user_sid in disconnection_handler:
-        user_left = disconnection_handler[user_sid]
-        channel_left = active_users[user_left]
-        times = [v for k,v in reload_handler.items() if k == user_left]
-        print(times[0])
-        print(reload_handler)
-        if now - times[0] > 120:
-            del active_users[user_left]
-            emit('leaveuser', {'user': user_left}, room=channel_left)
-        else:
+    
+            emit('disconnected', {'user': user_left, 'usersid': user_sid}, broadcast=True)            
             emit('check disconnect', {'user': user_left, 'channel': channel_left}, broadcast=True)
+    
 
-@socketio.on('disconnected')
-def check_disconnected():
+@socketio.on('reconnected')
+def check_disconnected(data):
     user_left = data['user']
     channel_left  = data['channel']
-    user_reconnected = data['reconnected']
+    user_reconnected = data['user_reconnected']
+    print(data)
     if not user_reconnected:
         emit('leaveuser', {'user': user_left}, room=channel_left)
+        del active_users[user_left]
+        #emit('leaveuser', {'user': user_left}, room=channel_left)
 
 @socketio.on("create channel")
 def create(data):
@@ -101,15 +94,19 @@ def message(data):
     message = data['JSON']['message']
     messages.append((room, data['JSON']))
     for channel, message in messages:
-        messages_channel[channel].append(message)
+        messages_channel[channel].append((message, messageID))
     emit('broadcast message', {'message': message, 'username': username, 'date': date, 'messageID': messageID}, room=room)
 
 @socketio.on("delete message")
 def delete(data):
-    user = data['username']
-    room = data['channel']
-    message = data['message']
-    date = data['date']
+    messageID = data['messageID']
+    for k, v in list(messages_channel.items()):
+        for messages in v:
+            for message in messages:
+                if message == messageID:
+                    v.remove(messages)
+                    room = k
+                    emit('message deleted', {'messageID': messageID}, room = room)
 
 if __name__ == "__main__":
     socketio.run(app)
