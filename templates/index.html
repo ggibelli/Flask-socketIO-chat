@@ -18,10 +18,13 @@
           <h4 style="margin-top:20px">Channel list <i style="float:right"></i></h4>
         <hr>
             <ul class="list-group" id="Channels">
-                <li class="list-group-item"><a href="#">#general</a></li>
+                <li class="list-group-item"><a href="#">general</a></li>
               {% for channel in channels %}
                 <li class="list-group-item"><a href="#">{{channel}}</a></li>
               {% endfor %}
+            </ul>
+            <hr>
+            <ul class="list-group" id="onlineUsers">
             </ul>
             <form id="CreateChannel" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
             <div class="form-row">
@@ -35,18 +38,22 @@
         <div class="col-md-9 messages">
         <h4 id="channelName" style="margin-top:20px">Channel name <i style="float:right"></i></h4>
         <hr>
-        <form id="sendMessage" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
-            <div class="form-row">
-            <div class="col">
-                <input type="text" id="Message" class="form-control" placeholder="Message">
-            </div>
-            <button type="submit" class="btn btn-primary">Send</button>
-            </div>
-        </form>
+        
           <div class="row">
             <div class="col-md-9 ml-auto messages" id="Messages" style="background-color: blueviolet;">
+              <form id="sendMessage" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
+                <div class="form-row">
+                <div class="col">
+                    <input type="text" id="Message" class="form-control" placeholder="Message">
+                </div>
+                <button type="submit" class="btn btn-primary">Send</button>
+                </div>
+            </form>
+              <div id="SingleMessage" class="list-group">
+                
+              </div> 
             </div>
-            <div class="col-md-3 ml-auto users" style="min-height: 80vh;">
+            <div class="col-md-3 ml-auto users" style="min-height: 88vh;">
               <h4 style="margin-top:20px">userlist<i style="float:right"></i></h4>
               <hr>
               <ul id="userList">
