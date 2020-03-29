@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     channels.push((channel.innerHTML));
   })
   if (!localStorage.getItem('lastchannel') || !channels.includes(localStorage.getItem('lastchannel'))) {
-    let lastchannel = "general";
+    lastchannel = "general";
     localStorage.setItem('lastchannel', lastchannel);
   }
 
@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Join last channel
   joinChannel(localStorage.getItem('lastchannel'));
-  document.getElementById(localStorage.getItem('lastchannel')).setAttribute('class', 'c-sidebar-nav-link c-sidebar-nav-link-success')
 
   // Create list of online users
   socket.on('onlineusers', data => {
@@ -38,18 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
     while (item.firstChild) {
       item.removeChild(item.firstChild)
     }
-    const title = document.createElement('li');
-    title.setAttribute('class', 'c-sidebar-nav-title')
-    title.innerHTML = 'Users'
-    document.querySelector('#onlineUsers').append(title)
     let entries = Object.entries(data.onlineusers)
     for (let [user, sid] of entries) {
       users_online[user] = sid; 
       const li = document.createElement('li');
       li.setAttribute('id', sid)
-      li.setAttribute('class', 'c-sidebar-nav-item')
-      const a = li.appendChild(document.createElement('a')); 
-      a.setAttribute('class', 'c-sidebar-nav-link') 
+      li.setAttribute('class', 'list-group-item')
+      const a = li.appendChild(document.createElement('a'));        
       a.innerHTML = user;
       a.href = "#";
       document.querySelector('#onlineUsers').append(li);
@@ -106,6 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
     while (item.firstChild) {
       item.removeChild(item.firstChild)
     }
+    let messagelength = data.messages.length;
+    //if (messagelength > 100){
+      //messagelength = 99;
+    //}
     let entries = Object.entries(data.messages)
     let message;
     let sendby;
@@ -137,16 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
         users_channel.push(data.userlist[i]);
       }
     }
-    const title = document.createElement('li');
-    title.setAttribute('class', 'c-sidebar-nav-title')
-    title.innerHTML = 'Users'
-    document.querySelector('#userList').append(title)
     for (user of users_channel){
       const li = document.createElement('li');
-      li.setAttribute('class', 'c-sidebar-nav-item')
       li.setAttribute('id', user)
-      const a = li.appendChild(document.createElement('a')); 
-      a.setAttribute('class', 'c-sidebar-nav-link')       
+      const a = li.appendChild(document.createElement('a'));        
       a.innerHTML = user;
       a.href = "#";
       document.querySelector('#userList').append(li); 
@@ -161,16 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // Create new item for list
       const channel = document.querySelector('#Channel').value;
       if (!channels.includes(channel)) {
-        socket.emit('create channel', {'channel': channel, 'user': username});
+        socket.emit('create channel', {'channel': channel});
         actualchannel = localStorage.getItem('lastchannel');
-        document.getElementById(actualchannel).setAttribute('class', 'c-sidebar-nav-link');
         channels.push(channel);
-        //if (!checkChannel(channel, actualchannel)){
-          //leaveChannel(actualchannel);
-          //joinChannel(channel);
-          //document.getElementById(channel).setAttribute('class', 'c-sidebar-nav-link c-sidebar-nav-link-success');
-          
-        //}
+        if (checkChannel(channel, actualchannel)){
+          leaveChannel(actualchannel);
+          joinChannel(channel);
+        }
       }
       else {
         window.alert("The channel already exists");
@@ -186,29 +175,19 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   socket.on('new channel', data => {
-    let channel = data.channel;
-    let user = data.user;
+    channel = data.channel;
     channels.push(channel);
     const li = document.createElement('li');
-    li.setAttribute('class', 'c-sidebar-nav-item')
-    const a = li.appendChild(document.createElement('a'));
-    a.setAttribute('class', 'c-sidebar-nav-link');
-    a.setAttribute('id', channel);
+    li.setAttribute('class', 'list-group-item active')
+    const a = li.appendChild(document.createElement('a'));        
     a.innerHTML = channel;
     a.href = "#";
-    if (username === user){
-      leaveChannel(localStorage.getItem('lastchannel'));
-      joinChannel(channel);
-      a.setAttribute('class', 'c-sidebar-nav-link c-sidebar-nav-link-success');
-    }
     a.addEventListener("click", () => { 
       actualchannel = localStorage.getItem('lastchannel');
-      document.getElementById(actualchannel).setAttribute('class', 'c-sidebar-nav-link');
       newchannel = a.innerHTML;
       if (checkChannel(actualchannel, newchannel)){
         leaveChannel(actualchannel);
         joinChannel(newchannel);
-        document.getElementById(newchannel).setAttribute('class', 'c-sidebar-nav-link c-sidebar-nav-link-success');
         return false;
       }    
     })
@@ -223,14 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('#Channels li a').forEach(function(channel){
     channels.push(channel.innerHTML);
     channel.onclick = () =>{
+      //document.querySelector('.list-group-item.active').classList.remove('active');
+      let chanlist = channel.classList;
+      chanlist.add('active');
       actualchannel = localStorage.getItem('lastchannel');
-      console.log(actualchannel)
-      document.getElementById(actualchannel).setAttribute('class', 'c-sidebar-nav-link');
       newchannel = channel.innerHTML;
       if (checkChannel(newchannel, actualchannel)){
         leaveChannel(actualchannel);
         joinChannel(newchannel);
-        channel.setAttribute('class', 'c-sidebar-nav-link c-sidebar-nav-link-success')
         return false;
       }
     }
@@ -268,60 +247,47 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   })
-  
 
   // Diplay message function
   function appendMessage(message, user, date, messageID) {
-    let attClass = 'justify-content-start'
+    const a = document.createElement('a');
+    a.setAttribute('id', messageID)
+    a.classList.add('list-group-item', 'list-group-item-action', 'message');
+    document.querySelector('#SingleMessage').append(a);
+    const div = document.createElement('div');
+    div.classList.add('d-flex', 'w-100' ,'justify-content-between');
+    const alist = document.querySelectorAll('#SingleMessage a');
+    const last = alist[alist.length - 1];
+    last.append(div)
+    const h5 = document.createElement('h5');
+    h5.classList.add('mb-1');
     if (user === localStorage.getItem('nickname')) {
-      attClass = 'justify-content-end';
-    }
-    const row = document.createElement('div');
-    if (messageID != undefined){
-      row.setAttribute('id', messageID);
-    }
-    row.classList.add('row', 'message', attClass)
-    document.querySelector('#SingleMessage').append(row);
-    const col = document.createElement('div');
-    col.classList.add('col-sm-10');
-    const rowlist = document.querySelectorAll('#SingleMessage div');
-    const last = rowlist[rowlist.length - 1];
-    last.append(col)
-    const card = document.createElement('div');
-    card.classList.add('card', 'text-white', 'bg-primary', 'mb-3');
-    col.append(card)
-    const header = document.createElement('div');
-    header.classList.add('card-header')
-    if (attClass === 'justify-content-end') {
-      header.innerHTML = 'You wrote';
-      const button = document.createElement('button');
-      button.classList.add('close');
-      const span = document.createElement('span');
-      span.innerHTML = '&times;';
-      button.append(span)
-      button.onclick = () => {
-        socket.emit('delete message',{'messageID': messageID});
-      }
-      if (messageID != undefined) {
-        header.append(button);
+      h5.innerHTML = 'You wrote:';
+      last.firstChild.append(h5);
+      if (messageID !== undefined) {
+        const button = document.createElement('button');
+        button.classList.add('btn', 'btn-secondary', 'btn-sm');
+        button.innerHTML = 'delete';
+        button.onclick = () => {
+          socket.emit('delete message',{'messageID': messageID});
+        }
+        last.firstChild.append(button);
       }
     }
     else {
-      header.innerHTML = `${user}`;
+      h5.innerHTML = `${user} wrote:`
+      last.firstChild.append(h5);
     }
-    card.append(header)
-    const body = document.createElement('div')
-    body.classList.add('card-body');
-    card.append(body);
     const p = document.createElement('p');
-    p.classList.add('card.text');
-    p.innerHTML= `${message}`;
-    body.append(p);
-    const footer = document.createElement('div');
-    footer.classList.add('small', 'card-footer', 'bg-transparent', 'border-0');
-    footer.innerHTML = `${date}`;
-    card.append(footer);
+    p.classList.add('mb-1');
+    p.innerHTML= `${message}`
+    last.append(p);
+    const small = document.createElement('small');
+    small.classList.add('text-muted');
+    small.innerHTML = `${date}`;
+    last.append(small);
   }
+
   function checkChannel(newchannel, oldchannel) {
     if (newchannel === oldchannel){
       return false;
@@ -334,14 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('lastchannel', channel);
     document.querySelector('#channelName').innerHTML = channel;    
     users_channel = []
-    if (channel == 'general') {
-      document.getElementById('onlineUsers').style.display = 'block'
-      document.getElementById('userList').style.display = 'none'
-    }
-    else {
-      document.getElementById('onlineUsers').style.display = 'none'
-      document.getElementById('userList').style.display = 'block'
-    }
   }
 
   function leaveChannel(channel) {

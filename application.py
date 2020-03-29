@@ -43,7 +43,6 @@ def test_disconnect():
             user_left = k
             channel_left = active_users[user_left]
             del users_online[k]
-    
             emit('disconnected', {'user': user_left, 'usersid': user_sid}, broadcast=True)            
             emit('check disconnect', {'user': user_left, 'channel': channel_left}, broadcast=True)
     
@@ -62,8 +61,9 @@ def check_disconnected(data):
 @socketio.on("create channel")
 def create(data):
     channel = data["channel"]
+    user = data["user"]
     channels.append(channel)
-    emit("new channel", {'channel': channel}, broadcast=True)
+    emit("new channel", {'channel': channel, 'user': user}, broadcast=True)
 
 @socketio.on('join')
 def on_join(data):

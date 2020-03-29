@@ -1,46 +1,64 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+ <head>
+ <!-- Required meta tags -->
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
-    <link href="/static/styles.css" rel="stylesheet">
-    <title>Flack</title>
-  </head>
-  <body>
-    <div class="container-fluid" style="min-height: 100vh;">
-    <div class="row" style="min-height: 100vh;">
-        <div class="col-md-3 general">
-          <h4 style="margin-top:20px">Channel list <i style="float:right"></i></h4>
-        <hr>
-            <ul class="list-group" id="Channels">
-                <li class="list-group-item"><a href="#">general</a></li>
-              {% for channel in channels %}
-                <li class="list-group-item"><a href="#">{{channel}}</a></li>
-              {% endfor %}
-            </ul>
-            <hr>
-            <ul class="list-group" id="onlineUsers">
-            </ul>
-            <form id="CreateChannel" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
-            <div class="form-row">
-            <div class="col">
-                <input id="Channel" name="channel" type="text" class="form-control" placeholder="#channel">
-            </div>
-            <button id="submit"type="submit" class="btn btn-primary">Create</button>
-            </div>
-        </form>
+ <!-- CoreUI CSS -->
+ <link rel="stylesheet" href="https://unpkg.com/@coreui/icons@1.0.0/css/all.min.css">
+ <link rel="stylesheet" href="https://unpkg.com/@coreui/coreui@3.0.0-rc.0/dist/css/coreui.min.css" crossorigin="anonymous">
+ <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+ <link href="/static/styles.css" rel="stylesheet">
+ <title>FLACK</title>
+ </head>
+ <body class="c-app">
+  <div class="c-sidebar c-sidebar-dark c-sidebar-fixed c-sidebar-lg-show" id="sidebar">
+    <ul class="c-sidebar-nav" id="Channels">
+      <li class="c-sidebar-nav-title">Channels</li>
+      <li class="c-sidebar-nav-item">
+        <a class="c-sidebar-nav-link " id="general" href="#">general</a>
+      </li>
+      {% for channel in channels %}
+      <li class="c-sidebar-nav-item"><a class="c-sidebar-nav-link" id="{{channel}}" href="#">{{channel}}</a></li>
+      {% endfor %}
+    </ul>
+    <ul class="c-sidebar-nav" id="onlineUsers">
+      <li class="c-sidebar-nav-title">Users</li>
+
+    </ul>
+    <ul class="c-sidebar-nav" id="userList">
+      <li class="c-sidebar-nav-title">Users</li>
+
+    </ul>
+    
+
+    
+    <form id="CreateChannel" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
+      <div class="form-row">
+        <div class="col">
+            <input id="Channel" name="channel" type="text" class="form-control" placeholder="#channel">
         </div>
-        <div class="col-md-9 messages">
-        <h4 id="channelName" style="margin-top:20px">Channel name <i style="float:right"></i></h4>
-        <hr>
-        
-          <div class="row">
-            <div class="col-md-9 ml-auto messages" id="Messages" style="background-color: blueviolet;">
+        <button id="submit"type="submit" class="btn btn-primary">Add</button>
+      </div>
+    </form>
+    <!--<button class="c-sidebar-minimizer c-class-toggler" type="button" data-target="_parent" data-class="c-sidebar-minimized"></button>-->
+  </div>
+  <div class="c-wrapper">
+    <header class="c-header navbar navbar-dark bg-dark sticky-top">
+      <button class="c-header-toggler c-class-toggler d-lg-none mfe-auto" type="button" data-target="#sidebar" data-class="c-sidebar-show">
+      <span class="navbar-toggler-icon"></span></button>
+      <button class="c-header-toggler c-class-toggler mfs-3 d-md-down-none" type="button" data-target="#sidebar" data-class="c-sidebar-lg-show" responsive="true">
+      <span class="navbar-toggler-icon"></span></button>
+      <span class="navbar-brand mb-0 h1" id="channelName"></span>
+    </header>
+    <div class="c-body">
+      <main class="c-main bg-dark">
+        <div class="container-fluid h-100 bg-dark text-white" >
+          <div class="row h-100">
+            <div class="col-sm-12 col-12 offset-0 offset-sm-0 py-2 " >
+              <div class="container-fluid d-block mx-auto" id="SingleMessage">
+              </div>
               <form id="sendMessage" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
                 <div class="form-row">
                 <div class="col">
@@ -48,27 +66,24 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Send</button>
                 </div>
-            </form>
-              <div id="SingleMessage" class="list-group">
-                
-              </div> 
+              </form>
             </div>
-            <div class="col-md-3 ml-auto users" style="min-height: 88vh;">
-              <h4 style="margin-top:20px">userlist<i style="float:right"></i></h4>
-              <hr>
-              <ul id="userList">
-                
-              </ul>
-              
-              </div>
+            
           </div>
         </div>
+        <!-- Main content here -->
         
+      </main>
     </div>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-  </body>
-  <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
-  </html>
+    <!--<footer class="c-footer">
+       Footer content here 
+    </footer>-->
+  </div>
+
+ <!-- Optional JavaScript -->
+ <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
+ <!-- Popper.js first, then CoreUI JS -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js" integrity="sha384-L2pyEeut/H3mtgCBaUNw7KWzp5n9&#43;4pDQiExs933/5QfaTh8YStYFFkOzSoXjlTb" crossorigin="anonymous"></script>
+ <script src="https://unpkg.com/@coreui/coreui@3.0.0-rc.0/dist/js/coreui.min.js"></script>
+ </body>
+</html>
