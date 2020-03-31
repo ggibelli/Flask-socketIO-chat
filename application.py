@@ -1,8 +1,6 @@
 import os
-import logging
 import requests
-import json
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, send, join_room, leave_room
 from collections import defaultdict
 import time
@@ -11,6 +9,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
+# Global datastructures for users and messages handling
 messageID_list = []
 users_online = {}
 channels = []
@@ -30,8 +29,6 @@ def connected(data):
     username = data['username']
     user_sid = request.sid
     users_online[username] = user_sid
-    #reload_handler[username] = now
-    #disconnection_handler[user_sid] = username
     emit('onlineusers', {'onlineusers': users_online}, broadcast=True)
 
 # Handling disconnection and page reload
@@ -46,7 +43,7 @@ def test_disconnect():
             emit('disconnected', {'user': user_left, 'usersid': user_sid}, broadcast=True)            
             emit('check disconnect', {'user': user_left, 'channel': channel_left}, broadcast=True)
     
-
+# Checking if the user reconnected
 @socketio.on('reconnected')
 def check_disconnected(data):
     user_left = data['user']
@@ -56,8 +53,8 @@ def check_disconnected(data):
     if not user_reconnected:
         emit('leaveuser', {'user': user_left}, room=channel_left)
         del active_users[user_left]
-        #emit('leaveuser', {'user': user_left}, room=channel_left)
 
+# Create channel function
 @socketio.on("create channel")
 def create(data):
     channel = data["channel"]
@@ -65,6 +62,7 @@ def create(data):
     channels.append(channel)
     emit("new channel", {'channel': channel, 'user': user}, broadcast=True)
 
+# Joining channel function and userlist for frontend
 @socketio.on('join')
 def on_join(data):
     username = data['username']
@@ -72,7 +70,6 @@ def on_join(data):
     join_room(room)
     active_users[username] = room
     userlist = [k for k,v in active_users.items() if v == room]
-    #emit('announcement', {'message': username + ' has entered the room.'}, room=room)
     emit('joinuser', {'userlist': userlist, 'messages': messages_channel[room]}, room=room)
 
 @socketio.on('leave')
@@ -81,8 +78,8 @@ def on_leave(data):
     room = data['channel']
     leave_room(room)   
     emit('leaveuser', {'user': username}, room=room)
-    #emit('announcement', {'message': username + ' has left the room.'}, room=room)
     
+# Function that receive the message from the socket, gives it an ID and stores it
 @socketio.on("send message")
 def message(data):
     messages = []
@@ -97,6 +94,7 @@ def message(data):
         messages_channel[channel].append((message, messageID))
     emit('broadcast message', {'message': message, 'username': username, 'date': date, 'messageID': messageID}, room=room)
 
+# Deleting message function
 @socketio.on("delete message")
 def delete(data):
     messageID = data['messageID']

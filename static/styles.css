@@ -1,124 +1,50 @@
-
-
-form {
- position: absolute  ;
- bottom: 0;
- left: 0;
- right: 0;
-}
-
-
-.message {
+.message{
 
   animation-name: hide;
   animation-duration: 2s;
   animation-fill-mode: forwards;
   animation-play-state: paused;
-}
-
-.users {
-  background-color: chartreuse;
-  box-sizing: border-box;
 
 }
-
-.messages {
-  box-sizing: border-box;
-  background-color: brown;
-}
-
-.messages1 {
-  box-sizing: border-box;
-  background-color: yellow;
-}
-
-#SingleMessage {
-  overflow-y: auto;
-}
-
-
-
-
-
-
-@media (min-width: 576px){
-  #left {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-  }
-
-  #right {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-  }
-}
-
-
 
 @keyframes hide {
-0% {
-    opacity: 1;
-    height: 100%;
-    line-height: 100%;
+  0% {
+      opacity: 1;
+      height: 100%;
+      line-height: 100%;
 
-}
-75% {
+  }
+
+
+  75% {
     opacity: 0;
     height: 100%;
     line-height: 100%;
 
 }
-100% {
-    opacity: 0;
-    height: 0px;
-    line-height: 0px;
 
-}
+
+  100% {
+      opacity: 0;
+      height: 0px;
+      line-height: 0px;
+  }
 }
 
 body, html {
-  height: 100%;
+  height: 100vh;
   margin: 0;
-  
+}
+
+#formMess {
+  height: 10%;
+}
+
+#bodyMess {
+  height: 90%;
 }
 
 
-.message-candidate {
-  background: rgba(223, 229, 121, 0.9);
-  padding: 40px;
-  max-width: 600px;
-  margin-bottom: 10px;
-}
 
-.message-hiring-manager {
-  background: rgba(0, 167, 204, 0.9);
-  padding: 40px;
-  max-width: 600px;
-  margin-bottom: 10px;
-}
 
-.messaging {
-  max-width: 600px;
-  margin-top: 20px;
-}
-
-.message-text {
-  margin-top: 10px;
-}
-
-.message-photo {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: center center;
-  display: inline-block;
-}
-
-.message-name {
-  margin-left: 10px;
-  display: inline-block;
-}
 

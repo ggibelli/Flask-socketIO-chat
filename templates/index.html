@@ -25,21 +25,16 @@
     </ul>
     <ul class="c-sidebar-nav" id="onlineUsers">
       <li class="c-sidebar-nav-title">Users</li>
-
     </ul>
     <ul class="c-sidebar-nav" id="userList">
       <li class="c-sidebar-nav-title">Users</li>
-
     </ul>
-    
-
-    
-    <form id="CreateChannel" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
+    <form id="CreateChannel" style="position: absolute; bottom: 5px; left: 5px; right: 5px; padding-right: 5px;" autocomplete="off">
       <div class="form-row">
         <div class="col">
-            <input id="Channel" name="channel" type="text" class="form-control" placeholder="#channel">
+            <input id="Channel" name="channels" type="text" class="form-control" placeholder="#channel" autocomplete="off" required>
         </div>
-        <button id="submit"type="submit" class="btn btn-primary">Add</button>
+        <button id="submit" type="submit" class=" btn btn-primary">Add</button>
       </div>
     </form>
     <!--<button class="c-sidebar-minimizer c-class-toggler" type="button" data-target="_parent" data-class="c-sidebar-minimized"></button>-->
@@ -52,34 +47,39 @@
       <span class="navbar-toggler-icon"></span></button>
       <span class="navbar-brand mb-0 h1" id="channelName"></span>
     </header>
-    <div class="c-body">
-      <main class="c-main bg-dark">
-        <div class="container-fluid h-100 bg-dark text-white" >
-          <div class="row h-100">
-            <div class="col-sm-12 col-12 offset-0 offset-sm-0 py-2 " >
-              <div class="container-fluid d-block mx-auto" id="SingleMessage">
+    <div class="c-body overflow-hidden">
+      <main class="c-main bg-dark overflow-hidden">
+        <div class="container-fluid h-100 bg-dark text-white  overflow-hidden" >
+          <div class="row  overflow-hidden" id="bodyMess">
+            <div class="col-sm-12 col-12 offset-0 offset-sm-0 py-2 overflow-auto mh-100" >
+              <div class="container-fluid mh-100 overflow-auto " id="SingleMessage" >
+
               </div>
-              <form id="sendMessage" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
+             
+              
+            </div>
+          </div>
+          <div class="row " id="formMess">
+            <div class="col-sm-12 col-12 offset-0 offset-sm-0 py-2 " >
+              <form id="sendMessage" name="mess" style="position: absolute; bottom: 5px; left: 5px; right: 5px;">
                 <div class="form-row">
                 <div class="col">
-                    <input type="text" id="Message" class="form-control" placeholder="Message">
+                    <input type="text" name="messages" id="Message" class="form-control" placeholder="Message" autocomplete="off" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Send</button>
+                <button id="submitMessage" type="submit" class=" btn btn-primary">Send</button>
                 </div>
               </form>
             </div>
-            
+
           </div>
+          
         </div>
-        <!-- Main content here -->
-        
       </main>
     </div>
     <!--<footer class="c-footer">
        Footer content here 
     </footer>-->
   </div>
-
  <!-- Optional JavaScript -->
  <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
  <!-- Popper.js first, then CoreUI JS -->
