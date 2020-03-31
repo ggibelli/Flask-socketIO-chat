@@ -4,7 +4,6 @@
   animation-duration: 2s;
   animation-fill-mode: forwards;
   animation-play-state: paused;
-
 }
 
 @keyframes hide {
@@ -12,18 +11,12 @@
       opacity: 1;
       height: 100%;
       line-height: 100%;
-
   }
-
-
   75% {
     opacity: 0;
     height: 100%;
     line-height: 100%;
-
 }
-
-
   100% {
       opacity: 0;
       height: 0px;

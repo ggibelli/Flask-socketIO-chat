@@ -1,4 +1,4 @@
-const formchannel = document.querySelector('#CreateChannel');
+// Global variables
 let username; 
 let channels = [];
 let users_channel = [];
@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })
 
+  // Disconnession handler to backend
   socket.on('check disconnect', data => {
     let user_left = data.user;
     let user_reconnected = false;
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   // Logic form channel creation
-  // By default, submit button is disabled
+  // By default, submit buttons are disabled
   document.querySelector('#submit').disabled = true;
   document.querySelector('#submitMessage').disabled = true;
   // Enable button only if there is text in the input field
@@ -80,8 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })
 
-  // When an user joins update the user channel list
+  // When an user joins update the user channel list and append the channel messages
   socket.on('joinuser', data => {
+    if (username === data.user) {
     const item = document.querySelector('#SingleMessage')
     while (item.firstChild) {
       item.removeChild(item.firstChild)
@@ -90,8 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let message;
     let sendby;
     let datesend;
+    let messID;
     let iterator = 0;
     let length = entries.length;
+    // Show only the last 100 messages
     if (length > 100) {
       iterator = length - 100;
     }
@@ -103,11 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
             message = entries[i][y][0].message;
             datesend = entries[i][y][0].date;
             sendby = entries[i][y][0].user;
-            appendMessage(message, sendby, datesend);
+            messID = entries[i][y][1];
+            appendMessage(message, sendby, datesend, messID);
           }
         }
       }
     }
+    // Scroll to the bottom when you change channel 
     scroll(99999)
     let userlength = data.userlist.length;
     let userlist = document.querySelectorAll('#userList li');
@@ -123,12 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
     for (user of users_channel){
       listLink(user, 'userList', user);
     }
+  }
   })
+  
 
   // When connected, configure buttons
   socket.on('connect', () => {
 
-    formchannel.addEventListener('submit', event => {
+    document.querySelector('#CreateChannel').addEventListener('submit', event => {
 
       // Create new item for list
       const channel = document.querySelector('#Channel').value;
@@ -151,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
 
+  // Creating a new channel list item every time an user create a new channel
   socket.on('new channel', data => {
     let channel = data.channel;
     let user = data.user;
@@ -287,15 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
     card.append(footer);
   }
 
-  function checkChannel(newchannel, oldchannel) {
-    if (newchannel === oldchannel){
-      return false;
-    }
-    return true;
-  }
-
   function switchChannel(newchan, actchan, element) {
-    if (checkChannel(newchan, actchan)) {
+    if (newchan !== actchan) {
       leaveChannel(actchan);
       joinChannel(newchan);
       document.getElementById(actchan).setAttribute('class', 'c-sidebar-nav-link');
@@ -325,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.emit('leave',{"channel":channel, "username":username});   
   }
 
+  // List creator function
   function listLink(id_li, id_dom, inn_html) {
     const li = document.createElement('li');
     li.setAttribute('id', id_li);
@@ -345,6 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById(id).append(title)
   }
 
+  // Function that checks if the input field is not empty or white spaces
   function inputValidator(id_form, id_button) {
     document.getElementById(id_form).onkeyup = () => {
       if (document.getElementById(id_form).value.trim().length > 0  ) {

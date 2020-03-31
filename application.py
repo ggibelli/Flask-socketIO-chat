@@ -70,7 +70,7 @@ def on_join(data):
     join_room(room)
     active_users[username] = room
     userlist = [k for k,v in active_users.items() if v == room]
-    emit('joinuser', {'userlist': userlist, 'messages': messages_channel[room]}, room=room)
+    emit('joinuser', {'userlist': userlist, 'messages': messages_channel[room], 'user': username}, room=room)
 
 @socketio.on('leave')
 def on_leave(data):
